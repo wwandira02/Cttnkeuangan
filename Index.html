@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buku Kas</title>
+<style>
+  :root{
+    --paper:#f7f4ec;
+    --ink:#1f2a24;
+    --ink-soft:#5b6459;
+    --line:#c9c2ae;
+    --hijau:#2f5b45;
+    --hijau-soft:#e4ece5;
+    --merah:#8c3b2e;
+    --merah-soft:#f3e3df;
+    --kertas-tua:#efe9d8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--kertas-tua);
+    color:var(--ink);
+    font-family:'Courier New', ui-monospace, monospace;
+    padding:0 0 60px;
+  }
+  header{
+    padding:28px 20px 18px;
+    text-align:center;
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+  }
+  header h1{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-size:26px;
+    letter-spacing:0.5px;
+    margin:0 0 4px;
+    font-weight:700;
+  }
+  header p{
+    margin:0;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  .tabs{
+    display:flex;
+    max-width:560px;
+    margin:18px auto 0;
+    padding:0 16px;
+    gap:8px;
+  }
+  .tab{
+    flex:1;
+    padding:10px 6px;
+    text-align:center;
+    font-size:13px;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    cursor:pointer;
+    border-radius:2px;
+    font-family:Georgia, serif;
+  }
+  .tab.active{
+    background:var(--hijau);
+    color:var(--paper);
+  }
+
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:16px;
+  }
+
+  .ringkasan{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .kartu{
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:10px 8px;
+    text-align:center;
+  }
+  .kartu .label{
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .kartu .nilai{
+    font-size:14px;
+    font-weight:700;
+    word-break:break-word;
+  }
+  .kartu.masuk .nilai{color:var(--hijau);}
+  .kartu.keluar .nilai{color:var(--merah);}
+
+  form{
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:14px;
+    margin-bottom:20px;
+  }
+  form .baris{
+    display:flex;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  form .baris > *{flex:1;}
+  label{
+    display:block;
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-bottom:3px;
+  }
+  input, select{
+    width:100%;
+    padding:8px;
+    border:1px solid var(--line);
+    background:#fff;
+    font-family:inherit;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .jenis-pilih{
+    display:flex;
+    gap:8px;
+  }
+  .jenis-pilih button{
+    flex:1;
+    padding:8px;
+    border:1px solid var(--line);
+    background:#fff;
+    font-family:inherit;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .jenis-pilih button.pilih-masuk.aktif{
+    background:var(--hijau-soft);
+    border-color:var(--hijau);
+    color:var(--hijau);
+    font-weight:700;
+  }
+  .jenis-pilih button.pilih-keluar.aktif{
+    background:var(--merah-soft);
+    border-color:var(--merah);
+    color:var(--merah);
+    font-weight:700;
+  }
+  button.simpan{
+    width:100%;
+    margin-top:4px;
+    padding:11px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    font-family:Georgia, serif;
+    font-size:14px;
+    cursor:pointer;
+  }
+  button.simpan:active{opacity:0.85;}
+
+  .daftar h2{
+    font-family:Georgia, serif;
+    font-size:15px;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:6px;
+  }
+  .entri{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding:10px 0;
+    border-bottom:1px dashed var(--line);
+    gap:8px;
+  }
+  .entri .kiri{flex:1;}
+  .entri .tgl{
+    font-size:10px;
+    color:var(--ink-soft);
+  }
+  .entri .kat{
+    font-size:13px;
+    margin-top:2px;
+  }
+  .entri .catatan-txt{
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .entri .jumlah{
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .entri .jumlah.masuk{color:var(--hijau);}
+  .entri .jumlah.keluar{color:var(--merah);}
+  .entri .hapus{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:16px;
+    cursor:pointer;
+    line-height:1;
+    padding:2px 4px;
+  }
+  .kosong{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:12px;
+    padding:30px 0;
+  }
+  .status{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  .laporan{
+    margin-bottom:20px;
+  }
+  .toggle-laporan{
+    width:100%;
+    padding:10px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    font-family:Georgia, serif;
+    font-size:13px;
+    color:var(--ink);
+    cursor:pointer;
+    text-align:left;
+  }
+  .panel-laporan{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-top:none;
+    padding:14px;
+  }
+  .mode-pilih{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .mode-btn{
+    flex:1;
+    padding:7px 4px;
+    border:1px solid var(--line);
+    background:#fff;
+    font-family:inherit;
+    font-size:11px;
+    cursor:pointer;
+  }
+  .mode-btn.aktif{
+    background:var(--hijau);
+    color:var(--paper);
+    border-color:var(--hijau);
+  }
+  .mode-form .baris{margin-bottom:0;}
+  .hasil-laporan{
+    margin-top:14px;
+    border-top:1px dashed var(--line);
+    padding-top:14px;
+  }
+  .periode-txt{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Buku Kas</h1>
+  <p>Catatan duit harian &amp; belanja</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tempat="Belilas">Belilas</div>
+  <div class="tab" data-tempat="Pematang Reba">Pematang Reba</div>
+</div>
+
+<main>
+
+  <div class="ringkasan">
+    <div class="kartu masuk">
+      <div class="label">Masuk</div>
+      <div class="nilai" id="totalMasuk">Rp0</div>
+    </div>
+    <div class="kartu keluar">
+      <div class="label">Keluar</div>
+      <div class="nilai" id="totalKeluar">Rp0</div>
+    </div>
+    <div class="kartu">
+      <div class="label">Omset</div>
+      <div class="nilai" id="totalOmset">Rp0</div>
+    </div>
+  </div>
+
+  <div class="laporan">
+    <button type="button" class="toggle-laporan" id="toggleLaporan">Lihat laporan periode ▾</button>
+    <div class="panel-laporan" id="panelLaporan" hidden>
+      <div class="mode-pilih">
+        <button type="button" class="mode-btn aktif" data-mode="rentang">Rentang tanggal</button>
+        <button type="button" class="mode-btn" data-mode="bulan">Per bulan</button>
+        <button type="button" class="mode-btn" data-mode="tahun">Per tahun</button>
+      </div>
+
+      <div class="mode-form" id="modeRentang">
+        <div class="baris">
+          <div>
+            <label for="dariTgl">Dari tanggal</label>
+            <input type="date" id="dariTgl">
+          </div>
+          <div>
+            <label for="sampaiTgl">Sampai tanggal</label>
+            <input type="date" id="sampaiTgl">
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-form" id="modeBulan" hidden>
+        <div class="baris">
+          <div>
+            <label for="pilihBulan">Bulan</label>
+            <select id="pilihBulan">
+              <option value="0">Januari</option>
+              <option value="1">Februari</option>
+              <option value="2">Maret</option>
+              <option value="3">April</option>
+              <option value="4">Mei</option>
+              <option value="5">Juni</option>
+              <option value="6">Juli</option>
+              <option value="7">Agustus</option>
+              <option value="8">September</option>
+              <option value="9">Oktober</option>
+              <option value="10">November</option>
+              <option value="11">Desember</option>
+            </select>
+          </div>
+          <div>
+            <label for="tahunUntukBulan">Tahun</label>
+            <input type="number" id="tahunUntukBulan" placeholder="2026">
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-form" id="modeTahun" hidden>
+        <div class="baris">
+          <div>
+            <label for="pilihTahun">Tahun</label>
+            <input type="number" id="pilihTahun" placeholder="2026">
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="simpan" id="lihatLaporan">Tampilkan</button>
+
+      <div class="hasil-laporan" id="hasilLaporan" hidden>
+        <div class="ringkasan">
+          <div class="kartu masuk">
+            <div class="label">Masuk</div>
+            <div class="nilai" id="lapMasuk">Rp0</div>
+          </div>
+          <div class="kartu keluar">
+            <div class="label">Keluar</div>
+            <div class="nilai" id="lapKeluar">Rp0</div>
+          </div>
+          <div class="kartu">
+            <div class="label">Omset</div>
+            <div class="nilai" id="lapOmset">Rp0</div>
+          </div>
+        </div>
+        <div class="periode-txt" id="lapPeriode"></div>
+      </div>
+    </div>
+  </div>
+
+  <form id="formEntri">
+    <div class="baris">
+      <div>
+        <label for="tanggal">Tanggal</label>
+        <input type="date" id="tanggal" required>
+      </div>
+      <div>
+        <label for="jumlah">Jumlah (Rp)</label>
+        <input type="number" id="jumlah" min="0" step="1" placeholder="0" required>
+      </div>
+    </div>
+
+    <div class="baris">
+      <div>
+        <label>Jenis</label>
+        <div class="jenis-pilih">
+          <button type="button" class="pilih-masuk aktif" data-jenis="masuk">Pemasukan</button>
+          <button type="button" class="pilih-keluar" data-jenis="keluar">Belanja</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="baris">
+      <div>
+        <label for="kategori">Keterangan singkat</label>
+        <input type="text" id="kategori" placeholder="mis. jual barang, beli stok" required>
+      </div>
+    </div>
+
+    <button type="submit" class="simpan">Simpan catatan</button>
+  </form>
+
+  <div class="daftar">
+    <h2 id="judulDaftar">Catatan &mdash; Belilas</h2>
+    <div id="listEntri"></div>
+  </div>
+
+  <div class="status" id="status">Memuat data...</div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ---- Konfigurasi Supabase ----
+const SUPABASE_URL = 'https://agrqwennrtbmbahwtzrr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFncnF3ZW5ucnRibWJhaHd0enJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzODMyODQsImV4cCI6MjEwNDk1OTI4NH0.Q2GlQ-SYSVth-AJVBGawqCpjg-mB2a5DWEcCyd5vbpU';
+const TABLE = 'entri_keuangan';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let semuaData = [];
+let tempatAktif = 'Belilas';
+let jenisAktif = 'masuk';
+
+const $ = (sel) => document.querySelector(sel);
+const formatRp = (n) => 'Rp' + Number(n).toLocaleString('id-ID');
+
+function setStatus(teks){
+  $('#status').textContent = teks;
+}
+
+async function muatData(){
+  try{
+    const { data, error } = await sb
+      .from(TABLE)
+      .select('*')
+      .order('tanggal', { ascending:false });
+    if(error) throw error;
+    semuaData = data || [];
+  }catch(e){
+    console.error(e);
+    semuaData = [];
+    setStatus('Gagal memuat data dari Supabase: ' + (e.message || e));
+    render();
+    return;
+  }
+  render();
+  setStatus('Tersambung ke Supabase · data tersinkron otomatis');
+}
+
+
+function render(){
+  const data = semuaData
+    .filter(d => d.tempat === tempatAktif)
+    .sort((a,b) => b.tanggal.localeCompare(a.tanggal) || b.id - a.id);
+
+  let masuk = 0, keluar = 0;
+  data.forEach(d => d.jenis === 'masuk' ? masuk += d.jumlah : keluar += d.jumlah);
+
+  $('#totalMasuk').textContent = formatRp(masuk);
+  $('#totalKeluar').textContent = formatRp(keluar);
+  $('#totalOmset').textContent = formatRp(masuk - keluar);
+  $('#judulDaftar').innerHTML = 'Catatan &mdash; ' + tempatAktif;
+
+  const list = $('#listEntri');
+  if(data.length === 0){
+    list.innerHTML = '<div class="kosong">Belum ada catatan di ' + tempatAktif + '.</div>';
+    return;
+  }
+
+  list.innerHTML = data.map(d => `
+    <div class="entri">
+      <div class="kiri">
+        <div class="tgl">${formatTanggal(d.tanggal)}</div>
+        <div class="kat">${escapeHtml(d.kategori)}</div>
+      </div>
+      <div class="jumlah ${d.jenis === 'masuk' ? 'masuk' : 'keluar'}">
+        ${d.jenis === 'masuk' ? '+' : '-'}${formatRp(d.jumlah)}
+      </div>
+      <button class="hapus" data-id="${d.id}" title="Hapus">✕</button>
+    </div>
+  `).join('');
+}
+
+function formatTanggal(iso){
+  const [y,m,d] = iso.split('-');
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${d} ${bulan[parseInt(m,10)-1]} ${y}`;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    tempatAktif = tab.dataset.tempat;
+    render();
+    $('#hasilLaporan').hidden = true;
+  });
+});
+
+document.querySelectorAll('.jenis-pilih button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.jenis-pilih button').forEach(b => b.classList.remove('aktif'));
+    btn.classList.add('aktif');
+    jenisAktif = btn.dataset.jenis;
+  });
+});
+
+$('#formEntri').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const tanggal = $('#tanggal').value;
+  const jumlah = parseInt($('#jumlah').value, 10);
+  const kategori = $('#kategori').value.trim();
+
+  if(!tanggal || !jumlah || !kategori) return;
+
+  const entri = {
+    tempat: tempatAktif,
+    tanggal,
+    jenis: jenisAktif,
+    kategori,
+    jumlah
+  };
+
+  setStatus('Menyimpan...');
+  try{
+    const { data, error } = await sb.from(TABLE).insert([entri]).select();
+    if(error) throw error;
+    if(data && data[0]) semuaData.push(data[0]);
+    render();
+    setStatus('Tersambung ke Supabase · data tersinkron otomatis');
+  }catch(err){
+    console.error(err);
+    setStatus('Gagal menyimpan ke Supabase: ' + (err.message || err));
+    return;
+  }
+
+  $('#formEntri').reset();
+  const today = new Date().toISOString().split('T')[0];
+  $('#tanggal').value = today;
+});
+
+$('#listEntri').addEventListener('click', async (e) => {
+  if(e.target.classList.contains('hapus')){
+    const id = e.target.dataset.id;
+    setStatus('Menghapus...');
+    try{
+      const { error } = await sb.from(TABLE).delete().eq('id', id);
+      if(error) throw error;
+      semuaData = semuaData.filter(d => String(d.id) !== String(id));
+      render();
+      setStatus('Tersambung ke Supabase · data tersinkron otomatis');
+    }catch(err){
+      console.error(err);
+      setStatus('Gagal menghapus di Supabase: ' + (err.message || err));
+    }
+  }
+});
+
+$('#tanggal').value = new Date().toISOString().split('T')[0];
+
+// ---- Laporan periode ----
+let modeLaporan = 'rentang';
+const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+$('#toggleLaporan').addEventListener('click', () => {
+  const panel = $('#panelLaporan');
+  const buka = panel.hidden;
+  panel.hidden = !buka;
+  $('#toggleLaporan').textContent = buka ? 'Sembunyikan laporan periode ▴' : 'Lihat laporan periode ▾';
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('aktif'));
+    btn.classList.add('aktif');
+    modeLaporan = btn.dataset.mode;
+    $('#modeRentang').hidden = modeLaporan !== 'rentang';
+    $('#modeBulan').hidden = modeLaporan !== 'bulan';
+    $('#modeTahun').hidden = modeLaporan !== 'tahun';
+    $('#hasilLaporan').hidden = true;
+  });
+});
+
+$('#lihatLaporan').addEventListener('click', () => {
+  let mulai, akhir, labelPeriode;
+
+  if(modeLaporan === 'rentang'){
+    const dari = $('#dariTgl').value;
+    const sampai = $('#sampaiTgl').value;
+    if(!dari || !sampai){
+      alert('Isi dulu tanggal dari dan sampai.');
+      return;
+    }
+    mulai = dari;
+    akhir = sampai;
+    labelPeriode = `${formatTanggal(dari)} — ${formatTanggal(sampai)}`;
+  } else if(modeLaporan === 'bulan'){
+    const bln = parseInt($('#pilihBulan').value, 10);
+    const thn = parseInt($('#tahunUntukBulan').value, 10);
+    if(!thn){
+      alert('Isi dulu tahunnya.');
+      return;
+    }
+    const bb = String(bln + 1).padStart(2, '0');
+    const hariTerakhir = new Date(thn, bln + 1, 0).getDate();
+    mulai = `${thn}-${bb}-01`;
+    akhir = `${thn}-${bb}-${String(hariTerakhir).padStart(2,'0')}`;
+    labelPeriode = `${bulanNama[bln]} ${thn}`;
+  } else {
+    const thn = parseInt($('#pilihTahun').value, 10);
+    if(!thn){
+      alert('Isi dulu tahunnya.');
+      return;
+    }
+    mulai = `${thn}-01-01`;
+    akhir = `${thn}-12-31`;
+    labelPeriode = `Tahun ${thn}`;
+  }
+
+  const data = semuaData.filter(d =>
+    d.tempat === tempatAktif && d.tanggal >= mulai && d.tanggal <= akhir
+  );
+
+  let masuk = 0, keluar = 0;
+  data.forEach(d => d.jenis === 'masuk' ? masuk += d.jumlah : keluar += d.jumlah);
+
+  $('#lapMasuk').textContent = formatRp(masuk);
+  $('#lapKeluar').textContent = formatRp(keluar);
+  $('#lapOmset').textContent = formatRp(masuk - keluar);
+  $('#lapPeriode').textContent = `${tempatAktif} · ${labelPeriode} · ${data.length} catatan`;
+  $('#hasilLaporan').hidden = false;
+});
+
+muatData();
+</script>
+
+</body>
+</html>
